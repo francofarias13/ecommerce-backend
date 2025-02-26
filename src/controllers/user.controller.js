@@ -1,60 +1,89 @@
-import UserModel from "../models/UserModel.js";
+import UserRepository from "../dao/repositories/UserRepository.js";
 import { hashPassword, comparePassword } from "../utils/bcrypt.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import UserDTO from "../dao/dtos/UserDTO.js";
 
+dotenv.config();
+
+// 📌 Registrar usuario
 export const registerUser = async (req, res) => {
   try {
-    const { first_name, last_name, email, age, password } = req.body;
+    const { first_name, last_name, email, age, password, role } = req.body;
 
-    // Verifica si el usuario ya existe
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "El usuario ya existe" });
+    // 📌 Verificar si el usuario ya existe
+    const existingUser = await UserRepository.getUserByEmail(email);
+    if (existingUser)
+      return res.status(400).json({ message: "El usuario ya existe" });
 
-    // Crea nuevo usuario con contraseña hasheada
-    const newUser = new UserModel({
+    // 📌 Determinar el rol del usuario (por defecto "user")
+    const userRole = role === "admin" ? "admin" : "user";
+
+    // 📌 Crear usuario en la base de datos
+    const newUser = await UserRepository.createUser({
       first_name,
       last_name,
       email,
       age,
       password: hashPassword(password),
+      role: userRole,
     });
 
-    await newUser.save();
-    res.status(201).json({ message: "Usuario registrado con éxito" });
-
+    res.status(201).json({
+      message: "Usuario registrado con éxito",
+      user: new UserDTO(newUser), // ✅ Usamos DTO para evitar exponer datos sensibles
+      redirectUrl: "/login",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error en el servidor", error });
+    res.status(500).json({ message: "Error en el servidor" });
   }
 };
 
-dotenv.config();
-
+// 📌 Login usuario
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Verificar si el usuario existe
-    const user = await UserModel.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
+    const user = await UserRepository.getUserByEmail(email);
+    if (!user)
+      return res.status(400).json({ message: "Usuario no encontrado" });
 
-    // Comparar contraseñas
-    const isMatch = comparePassword(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Contraseña incorrecta" });
+    // 📌 Verificar contraseña
+    if (!comparePassword(password, user.password)) {
+      return res.status(401).json({ message: "Contraseña incorrecta" });
+    }
 
-    // Crear token JWT
+    // 📌 Generar token JWT
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id.toString(), role: user.role },
       process.env.SECRET_KEY,
       { expiresIn: "1h" }
     );
 
-    // Guardar el token en una cookie segura
-    res.cookie("token", token, { httpOnly: true, secure: false, maxAge: 3600000 });
+    // 📌 Guardar el token en una cookie segura
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // Cambiar a true en producción con HTTPS
+      maxAge: 3600000, // 1 hora
+    });
 
-    res.status(200).json({ message: "Login exitoso", token });
-
+    res.status(200).json({
+      message: "Login exitoso",
+      token,
+      redirectUrl: "/profile",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error en el servidor", error });
+    res.status(500).json({ message: "Error en el servidor" });
+  }
+};
+
+// 📌 Obtener usuario autenticado
+export const currentUser = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: "No autorizado" });
+
+    res.status(200).json(new UserDTO(req.user)); // ✅ Usamos DTO para evitar enviar datos sensibles
+  } catch (error) {
+    res.status(500).json({ message: "Error en el servidor" });
   }
 };
