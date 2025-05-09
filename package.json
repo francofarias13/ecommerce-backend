@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "test": "mocha ./test/**/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -23,9 +24,15 @@
     "mongoose": "^8.9.6",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "uuid": "^11.1.0"
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "chai": "^5.2.0",
+    "mocha": "^11.2.2",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.1.0"
   }
 }

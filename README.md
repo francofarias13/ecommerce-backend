@@ -4,12 +4,16 @@ Backend desarrollado con Node.js, Express y MongoDB para gestionar usuarios, pro
 
 ## 📌 Tecnologías utilizadas
 
-- **Node.js**
-- **Express.js**
-- **MongoDB y Mongoose**
-- **JWT (JSON Web Token) para autenticación**
-- **bcrypt para encriptación de contraseñas**
-- **dotenv para configuración de variables de entorno**
+* **Node.js**
+* **Express.js**
+* **MongoDB y Mongoose**
+* **JWT (JSON Web Token) para autenticación**
+* **bcrypt para encriptación de contraseñas**
+* **dotenv para configuración de variables de entorno**
+* **Documentación con Swagger**
+* **Docker**
+* **Supertest Mocha Chai**
+* **Logger**
 
 ---
 
@@ -28,7 +32,7 @@ cd ecommerce-backend
 npm install
 ```
 
-### **3️⃣ Configurar el archivo ****`.env`**
+### **3️⃣ Configurar el archivo `.env`**
 
 Crear un archivo `.env` en la raíz del proyecto con los siguientes valores:
 
@@ -52,7 +56,7 @@ El servidor estará corriendo en: `http://localhost:3000`
 
 ## 📌 Rutas de la API
 
-### **🔹 Usuarios (****`/api/users`****)**
+### **🔹 Usuarios (`/api/users`)**
 
 | Método | Endpoint    | Descripción                     |
 | ------ | ----------- | ------------------------------- |
@@ -71,7 +75,7 @@ Ejemplo de registro:
 }
 ```
 
-### **🔹 Productos (****`/api/products`****)**
+### **🔹 Productos (`/api/products`)**
 
 | Método   | Endpoint | Descripción                         |
 | -------- | -------- | ----------------------------------- |
@@ -81,7 +85,7 @@ Ejemplo de registro:
 | `PUT`    | `/:id`   | Actualiza un producto (Solo admin)  |
 | `DELETE` | `/:id`   | Elimina un producto (Solo admin)    |
 
-### **🔹 Carrito (****`/api/carts`****)**
+### **🔹 Carrito (`/api/carts`)**
 
 | Método   | Endpoint              | Descripción                                   |
 | -------- | --------------------- | --------------------------------------------- |
@@ -105,7 +109,68 @@ Ejemplo de registro:
 
 ---
 
+## 🐳 DockerHub
+
+Podés ejecutar este proyecto directamente desde DockerHub:
+
+```bash
+docker pull francofariasdocker/ecommerce-backend
+docker run -p 3001:3000 --env-file .env francofariasdocker/ecommerce-backend
+```
+
+🔗 Imagen pública en DockerHub: [https://hub.docker.com/r/francofariasdocker/ecommerce-backend](https://hub.docker.com/r/francofariasdocker/ecommerce-backend)
+
+> Asegurate de tener el archivo `.env` con tus variables antes de correrlo.
+
+---
+
+📌 Accede a la app desde: http://localhost:3001
+
+⚠️ Importante:
+Dentro del contenedor, el servidor corre en el puerto 3000, pero con el mapeo -p 3001:3000, vas a acceder desde tu navegador o Postman en el puerto 3001 de tu máquina local.
+
+Esto incluye:
+
+Swagger: http://localhost:3001/api-docs
+
+Rutas como /api/users, /api/products, etc.
+
+
+📄 Documentación con Swagger
+La documentación de la API está disponible accediendo a:
+
+👉 http://localhost:3001/api-docs
+
+---
+
+🧪 Testing
+Este proyecto incluye tests funcionales para los endpoints del router /api/carts, utilizando Mocha y Chai.
+
+🔹 Ejecutar los tests:
+bash
+Copiar
+Editar
+npm test
+Se testean casos como: creación de carrito, obtener por ID, agregar productos, vaciado y errores.
+
+🎯 Estado del proyecto
+✅ Proyecto finalizado con todas las funcionalidades requeridas:
+
+Rutas protegidas y roles (admin/user)
+
+Tickets de compra
+
+Autenticación JWT con cookies
+
+Logger con Winston
+
+Testing con Mocha/Chai
+
+Documentación Swagger
+
+Docker listo y publicado
+
+
 ## 📌 Autor
 
 **Franco Farias** - *Desarrollador Backend* 🚀
-

@@ -9,6 +9,8 @@ import productRoutes from "./routes/products.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
+import { swaggerUiExpress, specs } from "./docs/swagger.js";
+import { addLogger } from "./middleware/logger.middleware.js";
 
 // Configurar variables de entorno
 dotenv.config();
@@ -17,6 +19,8 @@ dotenv.config();
 const app = express();
 
 // 📌 Middlewares (deben ir ANTES de las rutas)
+app.use(addLogger);
+app.use("/api-docs", swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 app.use(express.json()); // Para recibir JSON
 app.use(express.urlencoded({ extended: true })); // Para recibir formularios
 app.use(cookieParser()); // Para manejar cookies
@@ -40,7 +44,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/carts", cartRoutes);
 
 // 📌 Iniciar el servidor
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.info(`🚀 Servidor en ejecución en http://localhost:${PORT}`);
 });

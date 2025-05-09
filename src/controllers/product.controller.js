@@ -1,4 +1,5 @@
 import ProductRepository from "../dao/repositories/ProductRepository.js";
+import logger from "../config/logger.js";
 
 class ProductController {
   // 📌 Obtener todos los productos
@@ -30,6 +31,7 @@ class ProductController {
   static async createProduct(req, res) {
     try {
       const { title, description, price, stock, category } = req.body;
+      logger.info(`📦 Producto creado: ${product.title}`);
 
       if (!title || !description || !price || !stock || !category) {
         return res
@@ -48,6 +50,7 @@ class ProductController {
         .status(201)
         .json({ message: "Producto agregado correctamente", product });
     } catch (error) {
+      logger.error("❌ Error al crear producto", error);
       res.status(500).json({ message: "Error en el servidor" });
     }
   }
@@ -82,11 +85,14 @@ class ProductController {
       const { id } = req.params;
       const deletedProduct = await ProductRepository.deleteProduct(id);
 
-      if (!deletedProduct)
+      if (!deletedProduct){
+        logger.warn(`🗑️ Producto no encontrado para eliminar: ${id}`);
         return res.status(404).json({ message: "Producto no encontrado" });
-
+      }
+      logger.info(`🗑️ Producto eliminado: ${id}`);
       res.status(200).json({ message: "Producto eliminado correctamente" });
     } catch (error) {
+      logger.error("❌ Error al eliminar producto", error);
       res.status(500).json({ message: "Error en el servidor" });
     }
   }

@@ -1,14 +1,17 @@
 import CartRepository from "../dao/repositories/CartRepository.js";
 import ProductRepository from "../dao/repositories/ProductRepository.js";
 import TicketRepository from "../dao/repositories/TicketRepository.js";
+import logger from "../config/logger.js";
 
 class CartController {
   // 📌 Crear un nuevo carrito
   static async createCart(req, res) {
     try {
       const newCart = await CartRepository.createCart();
+      logger.info(`🛒 Carrito creado con ID: ${newCart._id}`);
       res.status(201).json({ message: "Carrito creado", cart: newCart });
     } catch (error) {
+      logger.error("❌ Error al crear carrito", error);
       res.status(500).json({ message: "Error en el servidor" });
     }
   }
@@ -20,9 +23,10 @@ class CartController {
       const cart = await CartRepository.getCartById(cid);
       if (!cart)
         return res.status(404).json({ message: "Carrito no encontrado" });
-
+      logger.info(`✅ Compra realizada para carrito ${cid} por ${req.user.email}`);
       res.status(200).json(cart);
     } catch (error) {
+      logger.error("❌ Error en la compra", error);
       res.status(500).json({ message: "Error en el servidor" });
     }
   }

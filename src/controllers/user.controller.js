@@ -3,6 +3,11 @@ import { hashPassword, comparePassword } from "../utils/bcrypt.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import UserDTO from "../dao/dtos/UserDTO.js";
+import logger from "../config/logger.js";
+
+logger.info("Servidor iniciado");
+logger.warn("Algo no está bien");
+logger.error("Fallo grave");
 
 dotenv.config();
 
@@ -13,9 +18,10 @@ export const registerUser = async (req, res) => {
 
     // 📌 Verificar si el usuario ya existe
     const existingUser = await UserRepository.getUserByEmail(email);
-    if (existingUser)
+    if (existingUser) {
+      logger.warn(`Registro fallido - usuario ya existe: ${email}`);
       return res.status(400).json({ message: "El usuario ya existe" });
-
+    }
     // 📌 Determinar el rol del usuario (por defecto "user")
     const userRole = role === "admin" ? "admin" : "user";
 
@@ -28,6 +34,7 @@ export const registerUser = async (req, res) => {
       password: hashPassword(password),
       role: userRole,
     });
+    logger.info(`✅ Usuario registrado: ${newUser.email}`);
 
     res.status(201).json({
       message: "Usuario registrado con éxito",
@@ -35,6 +42,7 @@ export const registerUser = async (req, res) => {
       redirectUrl: "/login",
     });
   } catch (error) {
+    logger.error("❌ Error al registrar usuario", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 };
@@ -45,14 +53,18 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await UserRepository.getUserByEmail(email);
-    if (!user)
+    if (!user){
+      logger.warn(`Login fallido - usuario no encontrado: ${email}`);
       return res.status(400).json({ message: "Usuario no encontrado" });
+    }
 
     // 📌 Verificar contraseña
     if (!comparePassword(password, user.password)) {
+      logger.warn(`Login fallido - contraseña incorrecta: ${email}`);
       return res.status(401).json({ message: "Contraseña incorrecta" });
     }
 
+    logger.info(`✅ Login exitoso para: ${email}`);
     // 📌 Generar token JWT
     const token = jwt.sign(
       { id: user._id.toString(), role: user.role },
@@ -73,6 +85,7 @@ export const loginUser = async (req, res) => {
       redirectUrl: "/profile",
     });
   } catch (error) {
+    logger.error("❌ Error en el login", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 };
